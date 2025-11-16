@@ -12,7 +12,6 @@ program
   .action(async (appName) => {
     const targetDir = path.join(process.cwd(), appName);
     
-    // Prevent overwrite
     if (fs.existsSync(targetDir)) {
       console.log(chalk.red(`❌ Directory ${appName} already exists`));
       process.exit(1);
@@ -20,18 +19,14 @@ program
 
     console.log(chalk.blue(`🚀 Creating ${appName}...`));
     
-    // Copy your ENTIRE existing app as template
-    // (Assumes it's in a "template" folder next to index.js)
     const templateDir = path.join(__dirname, 'template');
     await fs.copy(templateDir, targetDir);
 
-    // Replace package.json name
     const packageJsonPath = path.join(targetDir, 'package.json');
     const packageJson = await fs.readJSON(packageJsonPath);
     packageJson.name = appName;
     await fs.writeJSON(packageJsonPath, packageJson, { spaces: 2 });
 
-    // Create fresh .env
     const envExample = await fs.readFile(path.join(targetDir, '.env.example'), 'utf8');
     await fs.writeFile(path.join(targetDir, '.env'), envExample);
 
@@ -39,7 +34,7 @@ program
     execSync('npm install', { cwd: targetDir, stdio: 'inherit' });
 
     console.log(chalk.green('✅ Done!'));
-    console.log(chalk.white(`\nNext steps:\n  cd ${appName}\n  docker-compose up -d\n  npm run start:dev`));
+    console.log(chalk.white(`\nNext steps:\n  cd ${appName}\n  cp .env.example .env  # Add your secrets\n  npm run start:dev`));
   });
 
 program.parse();

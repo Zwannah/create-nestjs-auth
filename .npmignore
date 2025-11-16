@@ -1,0 +1,38 @@
+# Development files
+node_modules/
+.git/
+.gitignore
+*.log
+npm-debug.log*
+.DS_Store
+
+# Test outputs
+test-output/
+my-test-app/
+test-app/
+*-test/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Template's node_modules and build artifacts
+template/node_modules/
+template/dist/
+template/build/
+template/coverage/
+template/.env
+template/.env.local
+template/.temp/
+template/.tmp/
+
+# Template's Prisma generated files (will be regenerated)
+template/generated/
+
+# Template's git directory
+template/.git/
+
+# Misc
+.npmrc

@@ -1,2 +1,10 @@
 node_modules/
 my-test-app/
+test-project/
+test-output/
+*-test/
+*.log
+.DS_Store
+test-project/
+test-output/
+test/

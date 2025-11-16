@@ -1,14 +1,56 @@
 {
    "name": "create-nestjs-auth",
    "version": "1.0.0",
-   "bin": "./index.js",
-   "scripts": {
-      "test": "node index.js test-output"
+   "description": "CLI tool to scaffold a production-ready NestJS authentication system with JWT, refresh tokens, and RBAC",
+   "keywords": [
+      "nestjs",
+      "authentication",
+      "jwt",
+      "auth",
+      "boilerplate",
+      "starter",
+      "template",
+      "rbac",
+      "refresh-token",
+      "prisma",
+      "postgresql",
+      "cli",
+      "scaffold",
+      "generator"
+   ],
+   "author": {
+      "name": "Sabin Shrestha",
+      "email": "sabin.shrestha.er@gmail.com",
+      "url": "https://sabinshrestha69.com.np"
    },
-   "keywords": [],
-   "author": "",
-   "license": "ISC",
+   "license": "MIT",
+   "homepage": "https://github.com/masabinhok/create-nestjs-auth#readme",
+   "repository": {
+      "type": "git",
+      "url": "https://github.com/masabinhok/create-nestjs-auth.git"
+   },
+   "bugs": {
+      "url": "https://github.com/masabinhok/create-nestjs-auth/issues"
+   },
+   "bin": {
+      "create-nestjs-auth": "./index.js"
+   },
    "type": "commonjs",
+   "engines": {
+      "node": ">=20.0.0",
+      "npm": ">=10.0.0"
+   },
+   "scripts": {
+      "test": "node index.js test-output --skip-install",
+      "test:full": "node index.js test-output",
+      "prepublishOnly": "echo 'Ready to publish create-nestjs-auth'"
+   },
+   "files": [
+      "index.js",
+      "template",
+      "README.md",
+      "LICENSE"
+   ],
    "dependencies": {
       "chalk": "^4.1.2",
       "commander": "^14.0.2",

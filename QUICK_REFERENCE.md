@@ -3,19 +3,28 @@
 ## Installation
 
 ```bash
-# Use directly with npx (recommended)
+# Interactive mode (recommended) - will prompt for options
+npx create-nestjs-auth
+
+# Or provide app name directly
 npx create-nestjs-auth my-app
 
 # Or install globally
 npm install -g create-nestjs-auth
-create-nestjs-auth my-app
+create-nestjs-auth
 ```
 
 ## Commands
 
 ```bash
-# Basic usage
+# Interactive mode - prompts for project details
+create-nestjs-auth
+
+# Basic usage with app name
 create-nestjs-auth <app-name>
+
+# Non-interactive mode (use defaults)
+create-nestjs-auth my-app --yes
 
 # With options
 create-nestjs-auth my-app --skip-install
@@ -33,6 +42,7 @@ create-nestjs-auth --version
 
 | Option | Description |
 |--------|-------------|
+| `--yes` | Skip all prompts and use defaults (non-interactive) |
 | `--skip-install` | Skip npm/pnpm/yarn/bun install |
 | `--package-manager <pm>` | Force specific package manager (npm/pnpm/yarn/bun) |
 | `--skip-git` | Don't initialize git repository |

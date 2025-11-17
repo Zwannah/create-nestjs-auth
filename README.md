@@ -10,13 +10,17 @@
 ✅ **Complete JWT Auth System** - Access tokens, refresh token rotation, multi-device sessions  
 ✅ **Role-Based Access Control (RBAC)** - Admin/User roles with decorator-based guards  
 ✅ **Production Security** - HttpOnly cookies, bcrypt (12 rounds), rate limiting  
-✅ **Database Ready** - PostgreSQL + Prisma ORM with migrations  
+✅ **Database Ready** - PostgreSQL + Prisma ORM with migrations (only supported database)  
 ✅ **Developer Experience** - Pino logging, health checks, validation, comprehensive tests  
+✅ **Interactive CLI** - Guided setup with prompts for configuration options  
 
 ## Quick Start
 
 ```bash
-# Using npx (recommended)
+# Interactive mode (recommended)
+npx create-nestjs-auth
+
+# Or provide app name directly
 npx create-nestjs-auth my-app
 
 # Or with pnpm
@@ -24,10 +28,38 @@ pnpx create-nestjs-auth my-app
 
 # Or install globally
 npm install -g create-nestjs-auth
-create-nestjs-auth my-app
+create-nestjs-auth
 ```
 
 ## Usage
+
+### Interactive Mode (New! 🎉)
+
+Simply run the command without arguments to enter interactive mode:
+
+```bash
+npx create-nestjs-auth
+```
+
+You'll be prompted for:
+- **Project name** - Your application name
+- **Package manager** - npm, pnpm, yarn, or bun (auto-detected)
+- **Install dependencies** - Whether to install packages automatically
+- **Initialize git** - Whether to set up a git repository
+
+**Example interactive session:**
+```
+⚡️ create-nestjs-auth
+
+Production-ready NestJS authentication with Prisma + PostgreSQL
+
+? What is your project name? my-awesome-app
+? Which package manager would you like to use? pnpm (detected)
+? Install dependencies? Yes
+? Initialize git repository? Yes
+
+🚀 Creating my-awesome-app...
+```
 
 ### Basic Usage
 
@@ -49,6 +81,9 @@ Your API will be running at `http://localhost:8080/api/v1`
 ### With Options
 
 ```bash
+# Non-interactive mode (skip all prompts)
+npx create-nestjs-auth my-app --yes
+
 # Skip dependency installation
 npx create-nestjs-auth my-app --skip-install
 
@@ -59,13 +94,14 @@ npx create-nestjs-auth my-app --package-manager pnpm
 npx create-nestjs-auth my-app --skip-git
 
 # Combine options
-npx create-nestjs-auth my-app --skip-install --skip-git
+npx create-nestjs-auth my-app --skip-install --skip-git --yes
 ```
 
 ## CLI Options
 
 | Option | Description | Default |
 |--------|-------------|---------|
+| `--yes` | Skip all prompts and use defaults (non-interactive mode) | `false` |
 | `--skip-install` | Skip automatic dependency installation | `false` |
 | `--package-manager <pm>` | Choose package manager: `npm`, `pnpm`, `yarn`, or `bun` | Auto-detect |
 | `--skip-git` | Skip git repository initialization | `false` |

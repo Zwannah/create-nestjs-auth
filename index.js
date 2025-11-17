@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const { execSync } = require('child_process');
 const chalk = require('chalk');
+const inquirer = require('inquirer');
 
 // Validation helpers
 function validateAppName(name) {
@@ -71,20 +72,107 @@ function getInstallCommand(packageManager) {
   }
 }
 
+async function promptForProjectDetails(providedAppName, options) {
+  const questions = [];
+
+  // Ask for app name if not provided
+  if (!providedAppName) {
+    questions.push({
+      type: 'input',
+      name: 'appName',
+      message: 'What is your project name?',
+      default: 'my-nestjs-app',
+      validate: (input) => {
+        if (!input || input.trim() === '') {
+          return 'Project name is required';
+        }
+        if (!/^[a-z0-9-_@/]+$/i.test(input)) {
+          return 'Project name must contain only letters, numbers, hyphens, underscores, @ and /';
+        }
+        if (input.length > 214) {
+          return 'Project name must be less than 214 characters';
+        }
+        const reservedNames = ['node_modules', 'favicon.ico'];
+        if (reservedNames.includes(input.toLowerCase())) {
+          return `"${input}" is a reserved name and cannot be used`;
+        }
+        return true;
+      }
+    });
+  }
+
+  // Ask for package manager if not specified
+  if (!options.packageManager && !options.yes) {
+    const detected = detectPackageManager();
+    questions.push({
+      type: 'list',
+      name: 'packageManager',
+      message: 'Which package manager would you like to use?',
+      choices: [
+        { name: `npm${detected === 'npm' ? ' (detected)' : ''}`, value: 'npm' },
+        { name: `pnpm${detected === 'pnpm' ? ' (detected)' : ''}`, value: 'pnpm' },
+        { name: `yarn${detected === 'yarn' ? ' (detected)' : ''}`, value: 'yarn' },
+        { name: `bun${detected === 'bun' ? ' (detected)' : ''}`, value: 'bun' }
+      ],
+      default: detected
+    });
+  }
+
+  // Ask about dependency installation if not specified
+  if (!options.skipInstall && !options.yes) {
+    questions.push({
+      type: 'confirm',
+      name: 'installDependencies',
+      message: 'Install dependencies?',
+      default: true
+    });
+  }
+
+  // Ask about git initialization if not specified
+  if (!options.skipGit && !options.yes) {
+    questions.push({
+      type: 'confirm',
+      name: 'initializeGit',
+      message: 'Initialize git repository?',
+      default: true
+    });
+  }
+
+  const answers = await inquirer.prompt(questions);
+
+  return {
+    appName: providedAppName || answers.appName,
+    packageManager: options.packageManager || answers.packageManager || detectPackageManager(),
+    installDependencies: options.skipInstall ? false : (answers.installDependencies !== false),
+    initializeGit: options.skipGit ? false : (answers.initializeGit !== false)
+  };
+}
+
 program
   .name('create-nestjs-auth')
   .version('1.0.0')
-  .description('Create a production-ready NestJS authentication system')
-  .argument('<app-name>', 'Name of your application')
+  .description('Create a production-ready NestJS authentication system with Prisma + PostgreSQL')
+  .argument('[app-name]', 'Name of your application (optional - will prompt if not provided)')
   .option('--skip-install', 'Skip automatic dependency installation')
   .option('--package-manager <pm>', 'Package manager to use (npm|pnpm|yarn|bun)')
   .option('--skip-git', 'Skip git repository initialization')
+  .option('--yes', 'Skip all prompts and use defaults')
   .action(async (appName, options) => {
     try {
       console.log(chalk.cyan('\n⚡️ create-nestjs-auth\n'));
+      console.log(chalk.gray('Production-ready NestJS authentication with Prisma + PostgreSQL\n'));
 
       // Check Node.js version
       checkNodeVersion();
+
+      // Interactive mode - prompt for missing information
+      if (!appName || !options.yes) {
+        const answers = await promptForProjectDetails(appName, options);
+        appName = answers.appName;
+        options.packageManager = answers.packageManager;
+        options.skipInstall = !answers.installDependencies;
+        options.skipGit = !answers.initializeGit;
+      }
 
       // Validate app name
       validateAppName(appName);

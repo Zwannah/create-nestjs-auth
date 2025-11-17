@@ -41,11 +41,24 @@ Simply run the command without arguments to enter interactive mode:
 npx create-nestjs-auth
 ```
 
-You'll be prompted for:
+**Setup Prompts:**
 - **Project name** - Your application name
 - **Package manager** - npm, pnpm, yarn, or bun (auto-detected)
 - **Install dependencies** - Whether to install packages automatically
 - **Initialize git** - Whether to set up a git repository
+
+**Post-Setup Prompts (Optional):**
+- **Complete setup now** - Continue with guided configuration
+- **Database URL** - PostgreSQL connection string
+- **Setup database** - Run Prisma generate, migrations, and seeding
+- **Start dev server** - Launch the application immediately
+
+The CLI will:
+- ✨ Auto-generate secure JWT secrets
+- 🔧 Configure your `.env` file automatically
+- 📦 Set up Prisma and run migrations
+- 🌱 Seed your database with a default admin user
+- 🚀 Optionally start the dev server
 
 **Example interactive session:**
 ```
@@ -59,6 +72,26 @@ Production-ready NestJS authentication with Prisma + PostgreSQL
 ? Initialize git repository? Yes
 
 🚀 Creating my-awesome-app...
+📦 Installing dependencies...
+🔧 Initializing git repository...
+
+✅ Success! Created my-awesome-app
+
+🎉 Your project is ready!
+
+? Would you like to complete the setup now? Yes
+
+🔑 Generating JWT secrets...
+? Enter your PostgreSQL database URL: postgresql://user:pass@localhost:5432/mydb
+? Set up the database now? Yes
+
+📦 Setting up database...
+✓ Database setup complete!
+
+? Start the development server now? Yes
+
+🚀 Starting development server...
+Your API will be available at: http://localhost:8080/api/v1
 ```
 
 ### Basic Usage
@@ -143,9 +176,22 @@ my-app/
 
 ## Post-Creation Steps
 
-After creating your project, follow these steps:
+### Option 1: Interactive Setup (Recommended)
 
-### 1. Configure Environment Variables
+When you run `npx create-nestjs-auth` without the `--yes` flag, the CLI will guide you through:
+
+1. **Automatic JWT Secret Generation** - Secure secrets created for you
+2. **Database Configuration** - Enter your PostgreSQL URL
+3. **Database Setup** - Prisma client generation, migrations, and seeding
+4. **Dev Server Launch** - Start coding immediately
+
+**No manual steps needed!** ✨
+
+### Option 2: Manual Setup
+
+If you prefer manual control or used `--yes` flag, follow these steps:
+
+#### 1. Configure Environment Variables
 
 Edit `.env` file (already created from `.env.example`):
 
@@ -162,7 +208,7 @@ JWT_ACCESS_SECRET="your-generated-secret-here"
 JWT_REFRESH_SECRET="your-different-secret-here"
 ```
 
-### 2. Setup Database
+#### 2. Setup Database
 
 ```bash
 # Generate Prisma client
@@ -177,7 +223,7 @@ npm run prisma:seed
 
 Default credentials: `admin@example.com` / `Admin@123`
 
-### 3. Start Development Server
+#### 3. Start Development Server
 
 ```bash
 npm run start:dev

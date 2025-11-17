@@ -49,13 +49,20 @@ create-nestjs-auth --version
 
 ## After Creation
 
+### Interactive Setup (Automatic)
+The CLI will offer to complete setup automatically:
+- ✨ Generates JWT secrets
+- 🔧 Configures .env file
+- 📦 Sets up Prisma database
+- 🌱 Seeds default admin user
+- 🚀 Optionally starts dev server
+
+Just answer "Yes" to the prompts!
+
+### Manual Setup (if needed)
 ```bash
 cd my-app
 
-# Option 1: Interactive setup (recommended for first-time users)
-npm run setup
-
-# Option 2: Manual setup
 # 1. Generate JWT secrets
 openssl rand -base64 32  # Use for JWT_ACCESS_SECRET
 openssl rand -base64 32  # Use for JWT_REFRESH_SECRET

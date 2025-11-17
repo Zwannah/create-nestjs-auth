@@ -72,6 +72,11 @@ function getInstallCommand(packageManager) {
   }
 }
 
+function generateJWTSecret() {
+  const crypto = require('crypto');
+  return crypto.randomBytes(32).toString('base64');
+}
+
 async function promptForProjectDetails(providedAppName, options) {
   const questions = [];
 
@@ -146,6 +151,138 @@ async function promptForProjectDetails(providedAppName, options) {
     installDependencies: options.skipInstall ? false : (answers.installDependencies !== false),
     initializeGit: options.skipGit ? false : (answers.initializeGit !== false)
   };
+}
+
+async function handlePostSetup(targetDir, appName, packageManager, skipInstall, isYesMode) {
+  // Skip if user used --yes flag or if dependencies weren't installed
+  if (isYesMode || skipInstall) {
+    return false; // Return false to show manual instructions
+  }
+
+  console.log(chalk.green('\n✅ Success! Created ' + chalk.bold(appName)));
+  console.log(chalk.white('\n🎉 Your project is ready!\n'));
+
+  // Ask if user wants to continue with interactive setup
+  const { continueSetup } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'continueSetup',
+    message: 'Would you like to complete the setup now? (JWT secrets, database, etc.)',
+    default: true
+  }]);
+
+  if (!continueSetup) {
+    return false; // Return false to show manual instructions
+  }
+
+  // Generate JWT secrets
+  console.log(chalk.yellow('\n🔑 Generating JWT secrets...\n'));
+  const accessSecret = generateJWTSecret();
+  const refreshSecret = generateJWTSecret();
+  
+  console.log(chalk.gray('   Generated JWT_ACCESS_SECRET'));
+  console.log(chalk.gray('   Generated JWT_REFRESH_SECRET\n'));
+
+  // Ask for database URL
+  const { databaseUrl } = await inquirer.prompt([{
+    type: 'input',
+    name: 'databaseUrl',
+    message: 'Enter your PostgreSQL database URL:',
+    default: 'postgresql://user:password@localhost:5432/mydb',
+    validate: (input) => {
+      if (!input || input.trim() === '') {
+        return 'Database URL is required';
+      }
+      if (!input.startsWith('postgresql://') && !input.startsWith('postgres://')) {
+        return 'Database URL must start with postgresql:// or postgres://';
+      }
+      return true;
+    }
+  }]);
+
+  // Update .env file
+  console.log(chalk.gray('\n   Updating .env file...'));
+  const envPath = path.join(targetDir, '.env');
+  
+  try {
+    let envContent = await fs.readFile(envPath, 'utf8');
+    
+    // Replace placeholders
+    envContent = envContent.replace(/DATABASE_URL=.*/, `DATABASE_URL="${databaseUrl}"`);
+    envContent = envContent.replace(/JWT_ACCESS_SECRET=.*/, `JWT_ACCESS_SECRET="${accessSecret}"`);
+    envContent = envContent.replace(/JWT_REFRESH_SECRET=.*/, `JWT_REFRESH_SECRET="${refreshSecret}"`);
+    
+    await fs.writeFile(envPath, envContent);
+    console.log(chalk.green('   ✓ Environment variables configured\n'));
+  } catch (error) {
+    console.error(chalk.red('   ✗ Failed to update .env file'));
+    return false;
+  }
+
+  // Ask if user wants to setup database
+  const { setupDatabase } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'setupDatabase',
+    message: 'Set up the database now? (generate Prisma client, run migrations, seed)',
+    default: true
+  }]);
+
+  if (setupDatabase) {
+    console.log(chalk.yellow('\n📦 Setting up database...\n'));
+    
+    const pmPrefix = packageManager === 'npm' ? 'npm run' : packageManager;
+    
+    try {
+      // Generate Prisma client
+      console.log(chalk.gray('   Generating Prisma client...'));
+      execSync(`${pmPrefix} prisma:generate`, { cwd: targetDir, stdio: 'inherit' });
+      
+      // Run migrations
+      console.log(chalk.gray('\n   Running database migrations...'));
+      execSync(`${pmPrefix} prisma:migrate`, { cwd: targetDir, stdio: 'inherit' });
+      
+      // Seed database
+      console.log(chalk.gray('\n   Seeding database with default admin user...'));
+      execSync(`${pmPrefix} prisma:seed`, { cwd: targetDir, stdio: 'inherit' });
+      
+      console.log(chalk.green('\n   ✓ Database setup complete!\n'));
+      
+      console.log(chalk.cyan('   📝 Default admin credentials:'));
+      console.log(chalk.white('      Email:    admin@example.com'));
+      console.log(chalk.white('      Password: Admin@123\n'));
+    } catch (error) {
+      console.error(chalk.red('\n   ✗ Database setup failed'));
+      console.error(chalk.yellow('   You can run these commands manually:'));
+      console.error(chalk.gray(`     ${pmPrefix} prisma:generate`));
+      console.error(chalk.gray(`     ${pmPrefix} prisma:migrate`));
+      console.error(chalk.gray(`     ${pmPrefix} prisma:seed\n`));
+      return false;
+    }
+  }
+
+  // Ask if user wants to start dev server
+  const { startServer } = await inquirer.prompt([{
+    type: 'confirm',
+    name: 'startServer',
+    message: 'Start the development server now?',
+    default: false
+  }]);
+
+  if (startServer) {
+    console.log(chalk.yellow('\n🚀 Starting development server...\n'));
+    console.log(chalk.gray(`   Your API will be available at: ${chalk.cyan('http://localhost:8080/api/v1')}`));
+    console.log(chalk.gray(`   Press ${chalk.bold('Ctrl+C')} to stop the server\n`));
+    
+    const pmPrefix = packageManager === 'npm' ? 'npm run' : packageManager;
+    
+    try {
+      execSync(`${pmPrefix} start:dev`, { cwd: targetDir, stdio: 'inherit' });
+    } catch (error) {
+      // User likely pressed Ctrl+C, which is expected behavior
+      console.log(chalk.yellow('\n   Server stopped.'));
+    }
+  }
+
+  return true; // Successfully completed interactive setup
 }
 
 program
@@ -276,33 +413,49 @@ program
         console.log(chalk.gray('\n   Skipping git initialization (--skip-git)'));
       }
 
-      // Success message
-      console.log(chalk.green('\n✅ Success! Created ' + chalk.bold(appName)));
-      console.log(chalk.white('\n📚 Next steps:\n'));
-      console.log(chalk.cyan(`   cd ${appName}`));
-      
-      if (options.skipInstall) {
-        const pm = options.packageManager || detectPackageManager();
-        console.log(chalk.cyan(`   ${getInstallCommand(pm)}`));
+      // Post-setup interactive prompts
+      const completedInteractiveSetup = await handlePostSetup(
+        targetDir, 
+        appName, 
+        options.packageManager || detectPackageManager(),
+        options.skipInstall,
+        options.yes
+      );
+
+      // Show manual instructions if interactive setup was skipped or failed
+      if (!completedInteractiveSetup) {
+        console.log(chalk.green('\n✅ Success! Created ' + chalk.bold(appName)));
+        console.log(chalk.white('\n📚 Next steps:\n'));
+        console.log(chalk.cyan(`   cd ${appName}`));
+        
+        if (options.skipInstall) {
+          const pm = options.packageManager || detectPackageManager();
+          console.log(chalk.cyan(`   ${getInstallCommand(pm)}`));
+        }
+        
+        console.log(chalk.cyan('   \n   # Generate secure JWT secrets (save these!):'));
+        console.log(chalk.gray('   openssl rand -base64 32  # For JWT_ACCESS_SECRET'));
+        console.log(chalk.gray('   openssl rand -base64 32  # For JWT_REFRESH_SECRET'));
+        
+        console.log(chalk.cyan('\n   # Edit .env with your database URL and JWT secrets'));
+        console.log(chalk.cyan('   # Then setup the database:'));
+        console.log(chalk.gray('   npm run prisma:generate'));
+        console.log(chalk.gray('   npm run prisma:migrate'));
+        console.log(chalk.gray('   npm run prisma:seed'));
+        
+        console.log(chalk.cyan('\n   # Start development server:'));
+        console.log(chalk.gray('   npm run start:dev'));
+        
+        console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate'));
+        console.log(chalk.white('🐛 Issues: https://github.com/masabinhok/create-nestjs-auth/issues\n'));
+        
+        console.log(chalk.magenta('Happy coding! 🎉\n'));
+      } else {
+        // Interactive setup completed successfully
+        console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate'));
+        console.log(chalk.white('🐛 Issues: https://github.com/masabinhok/create-nestjs-auth/issues\n'));
+        console.log(chalk.magenta('Happy coding! 🎉\n'));
       }
-      
-      console.log(chalk.cyan('   \n   # Generate secure JWT secrets (save these!):'));
-      console.log(chalk.gray('   openssl rand -base64 32  # For JWT_ACCESS_SECRET'));
-      console.log(chalk.gray('   openssl rand -base64 32  # For JWT_REFRESH_SECRET'));
-      
-      console.log(chalk.cyan('\n   # Edit .env with your database URL and JWT secrets'));
-      console.log(chalk.cyan('   # Then setup the database:'));
-      console.log(chalk.gray('   npm run prisma:generate'));
-      console.log(chalk.gray('   npm run prisma:migrate'));
-      console.log(chalk.gray('   npm run prisma:seed'));
-      
-      console.log(chalk.cyan('\n   # Start development server:'));
-      console.log(chalk.gray('   npm run start:dev'));
-      
-      console.log(chalk.white('\n📖 Documentation: https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate'));
-      console.log(chalk.white('🐛 Issues: https://github.com/masabinhok/create-nestjs-auth/issues\n'));
-      
-      console.log(chalk.magenta('Happy coding! 🎉\n'));
 
     } catch (error) {
       console.error(chalk.red('\n❌ An unexpected error occurred:'));

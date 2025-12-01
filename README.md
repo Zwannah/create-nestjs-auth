@@ -1364,7 +1364,7 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 <sub>
  Generated projects follow <strong>NestJS best practices</strong> and <strong>OWASP security guidelines</strong><br>
- <strong>1.1.0</strong>  Updated November 2025  MIT License
+ <strong>2.0.0</strong>  Updated December 2025  MIT License
 </sub>
 
 <br><br>

@@ -19,12 +19,13 @@ const ORM_OPTIONS = {
     description: 'Traditional ORM with decorators',
     databases: ['postgres', 'mysql', 'sqlite'],
   },
+  mongoose: {
+    name: 'Mongoose',
+    description: 'MongoDB ODM (MongoDB only)',
+    databases: ['mongodb'],
+    fixedDatabase: true, // Skip database selection, always MongoDB
+  },
   // Future ORMs can be added here:
-  // mongoose: {
-  //   name: 'Mongoose',
-  //   description: 'MongoDB ODM',
-  //   databases: ['mongodb'],
-  // },
   // drizzle: {
   //   name: 'Drizzle',
   //   description: 'Lightweight TypeScript ORM',
@@ -174,7 +175,7 @@ async function promptForProjectDetails(providedAppName, options) {
     });
   }
 
-  // Ask for database if not in yes mode
+  // Ask for database if not in yes mode and ORM doesn't have fixed database
   if (!options.yes) {
     questions.push({
       type: 'list',
@@ -195,6 +196,11 @@ async function promptForProjectDetails(providedAppName, options) {
         });
       },
       default: 'postgres',
+      when: (answers) => {
+        // Skip database selection if ORM has a fixed database (e.g., Mongoose -> MongoDB)
+        const selectedOrm = answers.orm || options.orm || 'prisma';
+        return !ORM_OPTIONS[selectedOrm]?.fixedDatabase;
+      },
     });
   }
 
@@ -237,10 +243,21 @@ async function promptForProjectDetails(providedAppName, options) {
 
   const answers = await inquirer.prompt(questions);
 
+  // Determine the ORM and database
+  const selectedOrm = options.orm || answers.orm || 'prisma';
+  
+  // For ORMs with fixed database (like Mongoose), use their only database option
+  let selectedDatabase;
+  if (ORM_OPTIONS[selectedOrm]?.fixedDatabase) {
+    selectedDatabase = ORM_OPTIONS[selectedOrm].databases[0]; // e.g., 'mongodb' for Mongoose
+  } else {
+    selectedDatabase = options.database || answers.database || 'postgres';
+  }
+
   return {
     appName: providedAppName || answers.appName,
-    orm: options.orm || answers.orm || 'prisma',
-    database: options.database || answers.database || 'postgres',
+    orm: selectedOrm,
+    database: selectedDatabase,
     packageManager: options.packageManager || answers.packageManager || detectPackageManager(),
     installDependencies: options.skipInstall ? false : (answers.installDependencies !== false),
     initializeGit: options.skipGit ? false : (answers.initializeGit !== false)
@@ -278,8 +295,9 @@ async function generateProject(targetDir, options) {
       });
     }
 
-    // Step 3: Copy database-specific files
-    if (await fs.pathExists(dbDir)) {
+    // Step 3: Copy database-specific files (only if ORM doesn't have fixed database)
+    // ORMs like Mongoose include their own .env.example since they only support one DB
+    if (!ORM_OPTIONS[orm]?.fixedDatabase && await fs.pathExists(dbDir)) {
       console.log(chalk.gray(`   Configuring for ${DATABASE_OPTIONS[database]?.name || database}...`));
       await fs.copy(dbDir, targetDir, {
         overwrite: true,
@@ -456,6 +474,35 @@ async function handlePostSetup(targetDir, appName, options) {
         return false;
       }
     }
+  } else if (orm === 'mongoose') {
+    const { setupDatabase } = await inquirer.prompt([{
+      type: 'confirm',
+      name: 'setupDatabase',
+      message: 'Seed the database now? (create default admin user)',
+      default: true
+    }]);
+
+    if (setupDatabase) {
+      console.log(chalk.yellow('\n📦 Setting up database...\n'));
+      
+      const pmPrefix = packageManager === 'npm' ? 'npm run' : packageManager;
+      
+      try {
+        console.log(chalk.gray('   Seeding database with default admin user...'));
+        execSync(`${pmPrefix} db:seed`, { cwd: targetDir, stdio: 'inherit' });
+        
+        console.log(chalk.green('\n   ✓ Database setup complete!\n'));
+        
+        console.log(chalk.cyan('   📝 Default admin credentials:'));
+        console.log(chalk.white('      Email:    admin@example.com'));
+        console.log(chalk.white('      Password: Admin@123\n'));
+      } catch (error) {
+        console.error(chalk.red('\n   ✗ Database setup failed'));
+        console.error(chalk.yellow('   You can run this command manually:'));
+        console.error(chalk.gray(`     ${pmPrefix} db:seed\n`));
+        return false;
+      }
+    }
   }
 
   // Ask if user wants to start dev server
@@ -493,7 +540,7 @@ program
   .option('--skip-install', 'Skip automatic dependency installation')
   .option('--package-manager <pm>', 'Package manager to use (npm|pnpm|yarn|bun)')
   .option('--skip-git', 'Skip git repository initialization')
-  .option('--orm <orm>', 'ORM to use (prisma|typeorm)')
+  .option('--orm <orm>', 'ORM to use (prisma|typeorm|mongoose)')
   .option('--database <db>', 'Database to use (postgres|mysql|sqlite|mongodb)')
   .option('--yes', 'Skip all prompts and use defaults')
   .action(async (appName, options) => {
@@ -630,6 +677,9 @@ program
         } else if (projectOptions.orm === 'typeorm') {
           console.log(chalk.cyan('   # Then setup the database:'));
           console.log(chalk.gray('   npm run typeorm:run'));
+          console.log(chalk.gray('   npm run db:seed'));
+        } else if (projectOptions.orm === 'mongoose') {
+          console.log(chalk.cyan('   # Then seed the database:'));
           console.log(chalk.gray('   npm run db:seed'));
         }
         

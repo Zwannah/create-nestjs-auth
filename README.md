@@ -39,6 +39,7 @@ Building secure JWT authentication isn't trivial. You need:
 -  Rate limiting & brute-force protection
 -  PII-safe logging
 -  Proper password hashing (bcrypt 12 rounds)
+-  Flexible ORM & database choices
 
 **This CLI gives you all of that.** Production-ready, security-hardened, tested patternsinstantly.
 
@@ -75,10 +76,11 @@ Building secure JWT authentication isn't trivial. You need:
 # Run the CLI
 npx create-nestjs-auth@latest
 
-# Answer 7 quick questions
+# Answer quick questions
 #  Project name
+#  ORM (Prisma, Drizzle, TypeORM, or Mongoose)
+#  Database (PostgreSQL, MySQL, SQLite, or MongoDB)
 #  Package manager
-#  Database URL
 #  Install dependencies
 #  Setup database
 #  Initialize git
@@ -95,6 +97,8 @@ npx create-nestjs-auth@latest
 ️ create-nestjs-auth
 
 ? What is your project name? my-awesome-api
+? Which ORM would you like to use? Prisma
+? Which database would you like to use? PostgreSQL
 ? Which package manager? pnpm (detected)
 ? Install dependencies? Yes
 ? Initialize git repository? Yes
@@ -159,13 +163,13 @@ npx create-nestjs-auth@latest
 </td>
 <td width="50%">
 
-### Batteries Included
+### Flexible Database Support
 
-- **PostgreSQL + Prisma** - Modern ORM
-- **Database Migrations** - Version control for DB
-- **Default Admin User** - Seeded automatically
-- **API Documentation** - Complete examples
-- **Docker Support** - Coming soon
+- **4 ORMs** - Prisma, Drizzle, TypeORM, Mongoose
+- **4 Databases** - PostgreSQL, MySQL, SQLite, MongoDB
+- **Type-Safe** - Full TypeScript support across all ORMs
+- **Migrations** - Version control for your database
+- **Seeding** - Default admin user included
 
 </td>
 </tr>
@@ -186,6 +190,8 @@ npx create-nestjs-auth@latest my-api
 
 # 2. Answer prompts (20 seconds)
 #  Project name: my-api
+#  ORM: Prisma (or Drizzle, TypeORM, Mongoose)
+#  Database: PostgreSQL (or MySQL, SQLite, MongoDB)
 #  Package manager: pnpm
 #  Install dependencies: Yes
 #  Database URL: postgresql://localhost:5432/mydb
@@ -488,23 +494,97 @@ export class PostsController {
 | Requirement | Version | Why? |
 |------------|---------|------|
 | **Node.js** | >= 20.x | Native fetch, improved performance |
-| **PostgreSQL** | >= 16.x | Latest features, better JSON support |
+| **Database** | PostgreSQL 16+, MySQL 8+, SQLite 3+, or MongoDB 6+ | Your choice! |
 | **Package Manager** | npm/pnpm/yarn/bun | Any works, auto-detected |
 
 > **Note:** The CLI automatically checks your Node.js version before proceeding.
 
-### Don't Have PostgreSQL?
+### Database Setup Options
 
-**Option 1: Local with Docker**
+**PostgreSQL (Local with Docker)**
 ```bash
 docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres:16
 ```
 
-**Option 2: Managed Database**
+**MySQL (Local with Docker)**
+```bash
+docker run --name mysql -e MYSQL_ROOT_PASSWORD=mysql -p 3306:3306 -d mysql:8
+```
+
+**MongoDB (Local with Docker)**
+```bash
+docker run --name mongodb -p 27017:27017 -d mongo:6
+```
+
+**SQLite**
+No setup needed! SQLite creates a local file automatically.
+
+**Managed Database Services**
 - [Supabase](https://supabase.com) - Free PostgreSQL with GUI
 - [Neon](https://neon.tech) - Serverless Postgres, generous free tier
-- [Railway](https://railway.app) - PostgreSQL + deployment
+- [PlanetScale](https://planetscale.com) - Serverless MySQL
+- [MongoDB Atlas](https://www.mongodb.com/atlas) - Free MongoDB cluster
+- [Railway](https://railway.app) - PostgreSQL/MySQL + deployment
 - [Render](https://render.com) - Free PostgreSQL database
+
+---
+
+## ORM & Database Options
+
+Choose the combination that fits your project:
+
+### Supported ORMs
+
+| ORM | Best For | Features |
+|-----|----------|----------|
+| **[Prisma](https://www.prisma.io)** | Most projects | Type-safe queries, visual studio, migrations |
+| **[Drizzle](https://orm.drizzle.team)** | SQL lovers | Lightweight, SQL-like syntax, fast |
+| **[TypeORM](https://typeorm.io)** | Enterprise apps | Decorators, Active Record & Data Mapper |
+| **[Mongoose](https://mongoosejs.com)** | MongoDB users | Schema validation, middleware, populate |
+
+### Supported Databases
+
+| Database | ORMs | Connection URL Example |
+|----------|------|----------------------|
+| **PostgreSQL** | Prisma, Drizzle, TypeORM | `postgresql://user:pass@localhost:5432/db` |
+| **MySQL** | Prisma, Drizzle, TypeORM | `mysql://user:pass@localhost:3306/db` |
+| **SQLite** | Prisma, Drizzle, TypeORM | `file:./dev.db` |
+| **MongoDB** | Mongoose | `mongodb://localhost:27017/db` |
+
+### ORM + Database Compatibility
+
+```
+┌─────────────┬────────────┬───────┬────────┬─────────┐
+│             │ PostgreSQL │ MySQL │ SQLite │ MongoDB │
+├─────────────┼────────────┼───────┼────────┼─────────┤
+│ Prisma      │     ✅     │  ✅   │   ✅   │   ❌    │
+│ Drizzle     │     ✅     │  ✅   │   ✅   │   ❌    │
+│ TypeORM     │     ✅     │  ✅   │   ✅   │   ❌    │
+│ Mongoose    │     ❌     │  ❌   │   ❌   │   ✅    │
+└─────────────┴────────────┴───────┴────────┴─────────┘
+```
+
+### Which Should I Choose?
+
+**Choose Prisma if:**
+- You want the best developer experience
+- You're new to ORMs
+- You want visual database management (Prisma Studio)
+
+**Choose Drizzle if:**
+- You prefer writing SQL-like code
+- You want a lightweight solution
+- Performance is critical
+
+**Choose TypeORM if:**
+- You're familiar with decorators
+- You need Active Record pattern
+- You're migrating from other languages (Java, C#)
+
+**Choose Mongoose if:**
+- You're using MongoDB
+- You need flexible schemas
+- You want document validation
 
 ---
 
@@ -541,11 +621,21 @@ my-app/
         config.module.ts        # Environment config
         env.validation.ts       # Zod validation
         logger.config.ts        # Pino logger setup
+    
+     database/                 # ORM-specific (varies by choice)
+       # Prisma: prisma.service.ts, prisma.module.ts
+       # Drizzle: drizzle.ts, schema.ts, database.module.ts
+       # TypeORM: entities/, database.module.ts
+       # Mongoose: schemas/, database.module.ts
 
- ️ prisma/
+ ️ prisma/ (if using Prisma)
     schema.prisma               # Database models
     seed.ts                     # Default admin user
     migrations/                 # Version-controlled DB changes
+
+ ️ drizzle/ (if using Drizzle)
+    drizzle.config.ts           # Drizzle configuration
+    migrations/                 # SQL migrations
 
   test/
     app.e2e-spec.ts            # End-to-end tests
@@ -565,7 +655,7 @@ my-app/
 - **Interceptors** - Transform responses, add metadata
 - **Decorators** - Clean syntax for auth requirements
 - **DTOs** - Type-safe request validation
-- **Prisma** - Type-safe database access
+- **ORM Agnostic** - Same API regardless of database choice
 
 ---
 
@@ -903,6 +993,46 @@ npm run prisma:generate
 </details>
 
 <details>
+<summary><b> Drizzle migration errors</b></summary>
+
+Generate and run migrations:
+```bash
+npm run drizzle:generate
+npm run drizzle:migrate
+```
+
+Check your `drizzle.config.ts` has the correct database URL.
+
+</details>
+
+<details>
+<summary><b> TypeORM connection errors</b></summary>
+
+Check your `database.module.ts` configuration matches your `.env`:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/mydb
+```
+
+Run migrations:
+```bash
+npm run typeorm:migration:run
+```
+
+</details>
+
+<details>
+<summary><b> Mongoose connection errors</b></summary>
+
+Ensure MongoDB is running and check your connection string:
+```env
+DATABASE_URL=mongodb://localhost:27017/mydb
+```
+
+For MongoDB Atlas, use the full connection string from your dashboard.
+
+</details>
+
+<details>
 <summary><b> Still stuck?</b></summary>
 
 Open an issue with:
@@ -994,8 +1124,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 |------------|---------|---------|
 | [NestJS](https://nestjs.com) | 11.0 | Progressive Node.js framework |
 | [TypeScript](https://www.typescriptlang.org) | 5.7 | Type safety |
-| [Prisma](https://www.prisma.io) | 6.19 | Next-gen ORM |
-| [PostgreSQL](https://www.postgresql.org) | 16+ | Database |
+| [Prisma](https://www.prisma.io) | 6.x | Type-safe ORM (option 1) |
+| [Drizzle](https://orm.drizzle.team) | Latest | Lightweight ORM (option 2) |
+| [TypeORM](https://typeorm.io) | 0.3.x | Decorator-based ORM (option 3) |
+| [Mongoose](https://mongoosejs.com) | 8.x | MongoDB ODM (option 4) |
+| [PostgreSQL](https://www.postgresql.org) | 16+ | Relational database |
+| [MySQL](https://www.mysql.com) | 8+ | Relational database |
+| [SQLite](https://www.sqlite.org) | 3+ | Embedded database |
+| [MongoDB](https://www.mongodb.com) | 6+ | Document database |
 | [Passport JWT](https://www.passportjs.org) | - | JWT authentication |
 | [Bcrypt](https://github.com/kelektiv/node.bcrypt.js) | - | Password hashing |
 | [Zod](https://zod.dev) | - | Schema validation |
@@ -1035,9 +1171,39 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 ## FAQ
 
 <details>
-<summary><b>Can I use this with MySQL/MongoDB?</b></summary>
+<summary><b>Which ORM should I choose?</b></summary>
 
-Currently, only PostgreSQL is supported. However, you can modify the generated Prisma schema to work with other databases. See [Prisma docs](https://www.prisma.io/docs/reference/database-reference/supported-databases) for supported databases.
+- **Prisma** - Best for most projects. Great developer experience, type safety, and visual database management.
+- **Drizzle** - Best for SQL lovers who want lightweight, performant queries.
+- **TypeORM** - Best for enterprise apps or devs coming from Java/C# backgrounds.
+- **Mongoose** - Required if you're using MongoDB.
+
+All ORMs produce the same API endpointsyou can switch later if needed.
+
+</details>
+
+<details>
+<summary><b>Can I use MySQL/SQLite/MongoDB?</b></summary>
+
+**Yes!** The CLI supports:
+- **PostgreSQL** - With Prisma, Drizzle, or TypeORM
+- **MySQL** - With Prisma, Drizzle, or TypeORM
+- **SQLite** - With Prisma, Drizzle, or TypeORM
+- **MongoDB** - With Mongoose
+
+Just select your preferred combination during setup.
+
+</details>
+
+<details>
+<summary><b>Can I switch ORMs after project creation?</b></summary>
+
+It's possible but requires manual work. The auth/user service layer has the same interface across all ORMs, but you'd need to:
+1. Install new ORM dependencies
+2. Replace database module and service files
+3. Migrate your data
+
+We recommend choosing the right ORM upfront.
 
 </details>
 

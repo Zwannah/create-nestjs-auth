@@ -1,35 +1,55 @@
-import * as Joi from 'joi';
+import { z } from 'zod';
 
-export const envValidationSchema = Joi.object({
-  // Database
-  DATABASE_URL: Joi.string().required().messages({
-    'string.empty': 'DATABASE_URL is required',
-    'any.required': 'DATABASE_URL is required',
-  }),
-
-  // JWT
-  JWT_ACCESS_SECRET: Joi.string().min(32).required().messages({
-    'string.min': 'JWT_ACCESS_SECRET must be at least 32 characters',
-    'any.required': 'JWT_ACCESS_SECRET is required',
-  }),
-  JWT_REFRESH_SECRET: Joi.string().min(32).required().messages({
-    'string.min': 'JWT_REFRESH_SECRET must be at least 32 characters',
-    'any.required': 'JWT_REFRESH_SECRET is required',
-  }),
-  JWT_ACCESS_EXPIRY: Joi.string().default('15m'),
-  JWT_REFRESH_EXPIRY: Joi.string().default('7d'),
-
-  // Server
-  PORT: Joi.number().default(8080),
-  NODE_ENV: Joi.string()
-    .valid('development', 'production', 'test')
+export const envSchema = z.object({
+  NODE_ENV: z
+    .enum(['development', 'production', 'test'])
     .default('development'),
+  PORT: z.coerce.number().default(8080),
+
+  // Database
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+
+  // JWT Secrets
+  JWT_ACCESS_SECRET: z
+    .string()
+    .min(32, 'JWT_ACCESS_SECRET must be at least 32 characters'),
+  JWT_REFRESH_SECRET: z
+    .string()
+    .min(32, 'JWT_REFRESH_SECRET must be at least 32 characters'),
+  JWT_ACCESS_EXPIRY: z
+    .string()
+    .regex(/^\d+[smhd]$/, 'JWT_ACCESS_EXPIRY must be in format: 60m, 1h, etc.')
+    .default('15m'),
+  JWT_REFRESH_EXPIRY: z
+    .string()
+    .regex(/^\d+[smhd]$/, 'JWT_REFRESH_EXPIRY must be in format: 7d, 30d, etc.')
+    .default('7d'),
 
   // CORS
-  CORS_ORIGIN: Joi.string().default('http://localhost:3000'),
+  CORS_ORIGIN: z
+    .string()
+    .refine((val) => {
+      const origins = val.split(',').map((o) => o.trim());
+      const urlRegex = /^https?:\/\/.+/;
+      return origins.every((origin) => urlRegex.test(origin) || origin === '*');
+    }, 'CORS_ORIGIN must be valid URL(s) or "*"')
+    .default('http://localhost:3000'),
 
   // Logging
-  LOG_LEVEL: Joi.string()
-    .valid('fatal', 'error', 'warn', 'info', 'debug', 'trace')
+  LOG_LEVEL: z
+    .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
     .default('info'),
 });
+
+export type Env = z.infer<typeof envSchema>;
+
+export function validate(config: Record<string, unknown>) {
+  const result = envSchema.safeParse(config);
+  if (!result.success) {
+    const errors = result.error.errors
+      .map((e) => `${e.path.join('.')}: ${e.message}`)
+      .join('\n');
+    throw new Error(`Environment validation failed:\n${errors}`);
+  }
+  return result.data;
+}

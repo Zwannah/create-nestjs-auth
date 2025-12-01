@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
-import { envValidationSchema } from './config/env.validation';
+import { validate } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
@@ -18,10 +18,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
-      validationSchema: envValidationSchema,
-      validationOptions: {
-        abortEarly: true,
-      },
+      validate,
     }),
 
     // Rate limiting

@@ -283,7 +283,13 @@ async function generateProject(targetDir, options) {
     // Step 1: Copy base template (shared code)
     console.log(chalk.gray('   Copying base template...'));
     await fs.copy(baseDir, targetDir, {
-      filter: (src) => !src.includes('node_modules') && !src.includes('.git'),
+      filter: (src) => {
+        const basename = path.basename(src);
+        // Always include .gitignore
+        if (basename === '.gitignore') return true;
+        // Exclude node_modules and .git directory
+        return !src.includes('node_modules') && !src.includes(path.sep + '.git');
+      },
     });
 
     // Step 2: Copy ORM-specific files (overwrites base where needed)
@@ -291,7 +297,13 @@ async function generateProject(targetDir, options) {
       console.log(chalk.gray(`   Applying ${ORM_OPTIONS[orm]?.name || orm} adapter...`));
       await fs.copy(ormDir, targetDir, {
         overwrite: true,
-        filter: (src) => !src.includes('node_modules'),
+        filter: (src) => {
+          const basename = path.basename(src);
+          // Always include .gitignore
+          if (basename === '.gitignore') return true;
+          // Exclude node_modules
+          return !src.includes('node_modules');
+        },
       });
     }
 
@@ -301,7 +313,13 @@ async function generateProject(targetDir, options) {
       console.log(chalk.gray(`   Configuring for ${DATABASE_OPTIONS[database]?.name || database}...`));
       await fs.copy(dbDir, targetDir, {
         overwrite: true,
-        filter: (src) => !src.includes('node_modules'),
+        filter: (src) => {
+          const basename = path.basename(src);
+          // Always include .gitignore
+          if (basename === '.gitignore') return true;
+          // Exclude node_modules
+          return !src.includes('node_modules');
+        },
       });
     }
   } else {

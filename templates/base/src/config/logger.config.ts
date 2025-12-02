@@ -1,4 +1,3 @@
-clear
 import { Params } from 'nestjs-pino';
 import { IncomingMessage, ServerResponse } from 'http';
 

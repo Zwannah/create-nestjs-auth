@@ -27,13 +27,13 @@ export class RefreshToken {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ name: 'device_info', length: 255, nullable: true })
+  @Column({ name: 'device_info', type: 'varchar', length: 255, nullable: true })
   deviceInfo: string | null;
 
-  @Column({ name: 'ip_address', length: 45, nullable: true })
+  @Column({ name: 'ip_address', type: 'varchar', length: 45, nullable: true })
   ipAddress: string | null;
 
-  @Column({ name: 'expires_at' })
+  @Column({ name: 'expires_at', type: 'timestamp' })
   expiresAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })

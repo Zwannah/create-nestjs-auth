@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from '../generated/prisma';
+import { PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
 

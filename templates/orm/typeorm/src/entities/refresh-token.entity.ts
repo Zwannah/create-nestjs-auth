@@ -15,7 +15,8 @@ export class RefreshToken {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Index()
+  // Note: No index on token column - TEXT columns can't be indexed in MySQL
+  // without specifying key length, which TypeORM doesn't support
   @Column({ type: 'text' })
   token: string;
 

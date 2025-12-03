@@ -12,7 +12,7 @@ const ORM_OPTIONS = {
   prisma: {
     name: 'Prisma',
     description: 'Next-generation ORM with type safety',
-    databases: ['postgres', 'mysql', 'sqlite', 'mongodb'],
+    databases: ['postgres', 'mysql', 'sqlite'],
   },
   typeorm: {
     name: 'TypeORM',
@@ -22,8 +22,7 @@ const ORM_OPTIONS = {
   drizzle: {
     name: 'Drizzle',
     description: 'Lightweight TypeScript ORM',
-    databases: ['postgres'],
-    fixedDatabase: true, // Currently only PostgreSQL supported
+    databases: ['postgres', 'mysql', 'sqlite'],
   },
   mongoose: {
     name: 'Mongoose',
@@ -301,15 +300,37 @@ async function generateProject(targetDir, options) {
           const basename = path.basename(src);
           // Always include .gitignore
           if (basename === '.gitignore') return true;
-          // Exclude node_modules
-          return !src.includes('node_modules');
+          // Exclude node_modules and package.json (we'll merge package.json separately)
+          return !src.includes('node_modules') && basename !== 'package.json';
         },
       });
+      
+      // Merge ORM package.json
+      const ormPackageJsonPath = path.join(ormDir, 'package.json');
+      if (await fs.pathExists(ormPackageJsonPath)) {
+        const targetPackageJsonPath = path.join(targetDir, 'package.json');
+        const ormPackageJson = await fs.readJSON(ormPackageJsonPath);
+        
+        let targetPackageJson = {};
+        if (await fs.pathExists(targetPackageJsonPath)) {
+          targetPackageJson = await fs.readJSON(targetPackageJsonPath);
+        }
+        
+        // Deep merge: ORM package.json overwrites base
+        targetPackageJson = {
+          ...targetPackageJson,
+          ...ormPackageJson,
+          dependencies: { ...targetPackageJson.dependencies, ...ormPackageJson.dependencies },
+          devDependencies: { ...targetPackageJson.devDependencies, ...ormPackageJson.devDependencies },
+          scripts: { ...targetPackageJson.scripts, ...ormPackageJson.scripts },
+        };
+        
+        await fs.writeJSON(targetPackageJsonPath, targetPackageJson, { spaces: 2 });
+      }
     }
 
-    // Step 3: Copy database-specific files (only if ORM doesn't have fixed database)
-    // ORMs like Mongoose include their own .env.example since they only support one DB
-    if (!ORM_OPTIONS[orm]?.fixedDatabase && await fs.pathExists(dbDir)) {
+    // Step 3: Copy database-specific files and merge package.json
+    if (await fs.pathExists(dbDir)) {
       console.log(chalk.gray(`   Configuring for ${DATABASE_OPTIONS[database]?.name || database}...`));
       await fs.copy(dbDir, targetDir, {
         overwrite: true,
@@ -317,10 +338,31 @@ async function generateProject(targetDir, options) {
           const basename = path.basename(src);
           // Always include .gitignore
           if (basename === '.gitignore') return true;
-          // Exclude node_modules
-          return !src.includes('node_modules');
+          // Exclude node_modules and package.json (we'll merge package.json separately)
+          return !src.includes('node_modules') && basename !== 'package.json';
         },
       });
+      
+      // Merge database-specific package.json (adds drivers like pg, mysql2, better-sqlite3)
+      const dbPackageJsonPath = path.join(dbDir, 'package.json');
+      if (await fs.pathExists(dbPackageJsonPath)) {
+        const targetPackageJsonPath = path.join(targetDir, 'package.json');
+        const dbPackageJson = await fs.readJSON(dbPackageJsonPath);
+        
+        let targetPackageJson = {};
+        if (await fs.pathExists(targetPackageJsonPath)) {
+          targetPackageJson = await fs.readJSON(targetPackageJsonPath);
+        }
+        
+        // Deep merge: add database-specific dependencies
+        targetPackageJson = {
+          ...targetPackageJson,
+          dependencies: { ...targetPackageJson.dependencies, ...dbPackageJson.dependencies },
+          devDependencies: { ...targetPackageJson.devDependencies, ...dbPackageJson.devDependencies },
+        };
+        
+        await fs.writeJSON(targetPackageJsonPath, targetPackageJson, { spaces: 2 });
+      }
     }
   } else {
     // Fall back to old single template structure

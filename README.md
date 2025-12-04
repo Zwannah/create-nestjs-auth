@@ -19,11 +19,11 @@ Get a battle-tested, production-ready NestJS auth system in **under 3 minutes**.
 npx create-nestjs-auth@latest
 ```
 
-[Quick Start](#-quick-start)  [Features](#-what-you-get)  [Demo](#-see-it-in-action)  [Docs](#-links--resources)
+[Quick Start](#-quick-start) • [ORM & Database Options](#orm--database-options) • [Features](#-what-you-get) • [Docs](#-links--resources)
 
 ---
 
-**️ Save 40 hours**  ** Production-ready security**  ** Zero configuration**  ** Battle-tested**
+**⚡ v2.0.0** • **4 ORMs** (Prisma, Drizzle, TypeORM, Mongoose) • **4 Databases** (PostgreSQL, MySQL, SQLite, MongoDB)
 
 </div>
 
@@ -291,15 +291,21 @@ graph LR
 
 ```
 my-app/
-  src/modules/auth/      # JWT + Refresh token logic
-  src/modules/users/     # User CRUD + profile
-  src/modules/health/    # Health check endpoints
- ️  src/common/guards/     # JWT & RBAC guards
-  src/common/decorators/ # @Roles(), @Public(), @GetUser()
- ️  prisma/               # Schema + migrations + seed
-  test/                  # E2E test suite
-  .env                   # Auto-configured
-  package.json           # All dependencies ready
+├── src/
+│   ├── modules/
+│   │   ├── auth/          # JWT + Refresh token logic
+│   │   ├── users/         # User CRUD + profile
+│   │   └── health/        # Health check endpoints
+│   ├── common/
+│   │   ├── guards/        # JWT & RBAC guards
+│   │   ├── decorators/    # @Roles(), @Public(), @GetUser()
+│   │   └── filters/       # Exception handling
+│   └── config/            # Environment & logging config
+├── prisma/                # (Prisma) Schema + migrations + seed
+├── drizzle/               # (Drizzle) Schema + migrations
+├── test/                  # E2E test suite
+├── .env                   # Auto-configured secrets
+└── package.json           # All dependencies ready
 ```
 
 ---
@@ -358,6 +364,12 @@ npx create-nestjs-auth@latest my-app --skip-git
 
 # Combine options
 npx create-nestjs-auth@latest my-app --yes --skip-git --package-manager bun
+
+# Specify ORM and database
+npx create-nestjs-auth@latest my-app --orm drizzle --database postgres --yes
+
+# MongoDB with Mongoose
+npx create-nestjs-auth@latest my-app --orm mongoose --yes
 ```
 
 **Perfect for:** CI/CD pipelines, automation scripts, Docker builds
@@ -480,6 +492,8 @@ export class PostsController {
 
 | Option | Description | Example |
 |--------|-------------|---------|
+| `--orm <orm>` | Select ORM (prisma, drizzle, typeorm, mongoose) | `npx create-nestjs-auth@latest my-app --orm drizzle` |
+| `--database <db>` | Select database (postgres, mysql, sqlite, mongodb) | `npx create-nestjs-auth@latest my-app --database mysql` |
 | `--yes` | Skip all prompts, use defaults | `npx create-nestjs-auth@latest my-app --yes` |
 | `--skip-install` | Don't install dependencies | `npx create-nestjs-auth@latest my-app --skip-install` |
 | `--package-manager <pm>` | Force package manager (npm, pnpm, yarn, bun) | `npx create-nestjs-auth@latest my-app --package-manager pnpm` |
@@ -592,61 +606,61 @@ Choose the combination that fits your project:
 
 ### What's Inside
 
-The generated project follows NestJS best practices:
+The generated project follows NestJS best practices with a modular architecture:
 
 ```
 my-app/
-  src/
-     modules/auth/
-       auth.controller.ts      # Login, signup, refresh, logout
-       auth.service.ts         # JWT logic, token rotation
-       strategies/             # JWT strategies
-   
-     modules/users/
-       users.controller.ts     # CRUD endpoints
-       users.service.ts        # User business logic
-       dto/                    # Data transfer objects
-   
-     modules/health/
-       health.controller.ts    # K8s-ready health checks
-   
-    ️ common/
-       decorators/             # @Roles(), @Public(), @GetUser()
-       guards/                 # JWT + RBAC guards
-       interceptors/           # Response formatting
-       filters/                # Exception handling
-       validators/             # Custom validation rules
-   
-    ️ config/
-        config.module.ts        # Environment config
-        env.validation.ts       # Zod validation
-        logger.config.ts        # Pino logger setup
-    
-     database/                 # ORM-specific (varies by choice)
-       # Prisma: prisma.service.ts, prisma.module.ts
-       # Drizzle: drizzle.ts, schema.ts, database.module.ts
-       # TypeORM: entities/, database.module.ts
-       # Mongoose: schemas/, database.module.ts
-
- ️ prisma/ (if using Prisma)
-    schema.prisma               # Database models
-    seed.ts                     # Default admin user
-    migrations/                 # Version-controlled DB changes
-
- ️ drizzle/ (if using Drizzle)
-    drizzle.config.ts           # Drizzle configuration
-    migrations/                 # SQL migrations
-
-  test/
-    app.e2e-spec.ts            # End-to-end tests
-    jest-e2e.json              # Test configuration
-
-  Config Files
-     .env                        # Your secrets (auto-generated)
-     .env.example                # Template for team
-     nest-cli.json               # NestJS config
-     tsconfig.json               # TypeScript config
-     eslint.config.mjs           # Linting rules
+├── src/
+│   ├── modules/
+│   │   ├── auth/
+│   │   │   ├── auth.controller.ts      # Login, signup, refresh, logout
+│   │   │   ├── auth.service.ts         # JWT logic, token rotation
+│   │   │   └── auth.module.ts
+│   │   │
+│   │   ├── users/
+│   │   │   ├── users.controller.ts     # CRUD endpoints
+│   │   │   ├── users.service.ts        # User business logic
+│   │   │   └── dto/                    # Data transfer objects
+│   │   │
+│   │   └── health/
+│   │       └── health.controller.ts    # K8s-ready health checks
+│   │
+│   ├── common/
+│   │   ├── decorators/             # @Roles(), @Public(), @GetUser()
+│   │   ├── guards/                 # JWT + RBAC guards
+│   │   ├── interceptors/           # Response formatting
+│   │   ├── filters/                # Exception handling
+│   │   └── validators/             # Custom validation rules
+│   │
+│   ├── config/
+│   │   ├── config.module.ts        # Environment config
+│   │   ├── env.validation.ts       # Zod validation
+│   │   └── logger.config.ts        # Pino logger setup
+│   │
+│   └── database/                   # ORM-specific setup
+│       # Prisma:   prisma.service.ts, prisma.module.ts
+│       # Drizzle:  drizzle.ts, schema.ts, database.module.ts
+│       # TypeORM:  entities/, database.module.ts
+│       # Mongoose: schemas/, database.module.ts
+│
+├── prisma/ (if using Prisma)
+│   ├── schema.prisma               # Database models
+│   ├── seed.ts                     # Default admin user
+│   └── migrations/                 # Version-controlled DB changes
+│
+├── drizzle/ (if using Drizzle)
+│   ├── drizzle.config.ts           # Drizzle configuration
+│   └── migrations/                 # SQL migrations
+│
+├── test/
+│   ├── app.e2e-spec.ts             # End-to-end tests
+│   └── jest-e2e.json               # Test configuration
+│
+├── .env                            # Your secrets (auto-generated)
+├── .env.example                    # Template for team
+├── nest-cli.json                   # NestJS config
+├── tsconfig.json                   # TypeScript config
+└── eslint.config.mjs               # Linting rules
 ```
 
 ### Key Design Patterns
@@ -1146,9 +1160,9 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ### Documentation
 - [Full Template Documentation](https://github.com/masabinhok/nestjs-jwt-rbac-boilerplate)
-- [Interactive Setup Guide](INTERACTIVE_SETUP.md)
-- [Quick Reference](QUICK_REFERENCE.md)
-- [Changelog](CHANGELOG.md)
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute
+- [Security Policy](SECURITY.md) - Reporting vulnerabilities
+- [Changelog](CHANGELOG.md) - Version history
 
 ### Community
 - [GitHub Discussions](https://github.com/masabinhok/create-nestjs-auth/discussions) - Ask questions, share ideas
@@ -1364,7 +1378,7 @@ Found a bug? Have a feature idea? [Open an issue](https://github.com/masabinhok/
 
 <sub>
  Generated projects follow <strong>NestJS best practices</strong> and <strong>OWASP security guidelines</strong><br>
- <strong>2.0.0</strong>  Updated December 2025  MIT License
+ <strong>v2.0.0</strong>  Multi-ORM & Multi-Database Support  December 2025  MIT License
 </sub>
 
 <br><br>

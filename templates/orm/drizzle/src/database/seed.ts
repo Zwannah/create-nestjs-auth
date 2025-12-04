@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
+import { eq } from 'drizzle-orm';
 import { users } from './schema';
 
 dotenv.config();
@@ -23,9 +24,11 @@ async function seed() {
 
   try {
     // Check if admin already exists
-    const existingAdmin = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.email, 'admin@example.com'),
-    });
+    const [existingAdmin] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, 'admin@example.com'))
+      .limit(1);
 
     if (existingAdmin) {
       console.log('⚠️  Admin user already exists, skipping...');
@@ -47,9 +50,11 @@ async function seed() {
     }
 
     // Check if regular user already exists
-    const existingUser = await db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.email, 'user@example.com'),
-    });
+    const [existingUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, 'user@example.com'))
+      .limit(1);
 
     if (existingUser) {
       console.log('⚠️  Regular user already exists, skipping...');

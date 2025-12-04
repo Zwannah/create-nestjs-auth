@@ -537,7 +537,7 @@ async function handlePostSetup(targetDir, appName, options) {
     const { setupDatabase } = await inquirer.prompt([{
       type: 'confirm',
       name: 'setupDatabase',
-      message: 'Set up the database now? (run migrations, seed)',
+      message: 'Set up the database now? (sync schema, seed)',
       default: true
     }]);
 
@@ -547,8 +547,8 @@ async function handlePostSetup(targetDir, appName, options) {
       const pmPrefix = packageManager === 'npm' ? 'npm run' : packageManager;
       
       try {
-        console.log(chalk.gray('   Running TypeORM migrations...'));
-        execSync(`${pmPrefix} migration:run`, { cwd: targetDir, stdio: 'inherit' });
+        console.log(chalk.gray('   Synchronizing database schema from entities...'));
+        execSync(`${pmPrefix} schema:sync`, { cwd: targetDir, stdio: 'inherit' });
         
         console.log(chalk.gray('\n   Seeding database with default admin user...'));
         execSync(`${pmPrefix} seed`, { cwd: targetDir, stdio: 'inherit' });
@@ -561,7 +561,7 @@ async function handlePostSetup(targetDir, appName, options) {
       } catch (error) {
         console.error(chalk.red('\n   ✗ Database setup failed'));
         console.error(chalk.yellow('   You can run these commands manually:'));
-        console.error(chalk.gray(`     ${pmPrefix} migration:run`));
+        console.error(chalk.gray(`     ${pmPrefix} schema:sync`));
         console.error(chalk.gray(`     ${pmPrefix} seed\n`));
         return false;
       }
@@ -801,7 +801,7 @@ program
           console.log(chalk.gray('   npm run prisma:seed'));
         } else if (projectOptions.orm === 'typeorm') {
           console.log(chalk.cyan('   # Then setup the database:'));
-          console.log(chalk.gray('   npm run migration:run'));
+          console.log(chalk.gray('   npm run schema:sync'));
           console.log(chalk.gray('   npm run seed'));
         } else if (projectOptions.orm === 'mongoose') {
           console.log(chalk.cyan('   # Then seed the database:'));

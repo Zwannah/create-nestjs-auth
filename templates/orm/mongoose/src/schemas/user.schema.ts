@@ -48,6 +48,3 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-// Add index for email lookups
-UserSchema.index({ email: 1 });

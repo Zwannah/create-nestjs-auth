@@ -16,6 +16,6 @@ import { RefreshToken, RefreshTokenSchema } from '../../schemas/refresh-token.sc
   ],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

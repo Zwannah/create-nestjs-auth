@@ -5,43 +5,29 @@ All notable changes to create-nestjs-auth will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] - 2025-11-16
+## [2.0.0] - 2025-12-04
 
 ### Added
-- Initial release of create-nestjs-auth CLI
-- Comprehensive error handling and validation
-- App name validation (npm naming conventions)
-- Node.js version checking (requires >= 20.x)
-- Package manager auto-detection (npm, pnpm, yarn, bun)
-- Multiple CLI options:
-  - `--skip-install` - Skip dependency installation
-  - `--package-manager` - Choose specific package manager
-  - `--skip-git` - Skip git initialization
-- Automatic .env file creation from .env.example
-- Git repository initialization with initial commit
-- Interactive setup script (`npm run setup`) in generated projects
-- Comprehensive README with usage examples
-- .npmignore for clean npm package
-- Proper package.json metadata for npm
+- ✨ **Multi-ORM Support** - Choose between Prisma, Drizzle, TypeORM, or Mongoose
+- 🗄️ **Multi-Database Support** - PostgreSQL, MySQL, SQLite, or MongoDB
+- 🏗️ **Modular Template Architecture** - Base + ORM + Database composition
+- 🧪 **Comprehensive Test Scripts** - Test each ORM individually
+- 📦 **Modular CLI Source Code** - Split into organized modules in `src/`
+- 🔄 **GitHub Actions CI/CD** - Automated testing and npm publishing
+- 📝 **Open Source Ready** - CODE_OF_CONDUCT.md, SECURITY.md, PR templates
 
 ### Changed
-- Improved user feedback with better console messages
-- Enhanced error messages with actionable solutions
-- Better handling of missing template files
-- Excluded .git directory from template copying
+- 🔧 **CLI Architecture** - Modularized from single file to `src/` directory
+- 📦 **Package Structure** - Added `bin/` and `src/` directories
+- 🎯 **Keywords** - Updated for better npm discoverability
+- 📚 **Documentation** - Consolidated redundant markdown files
 
-### Fixed
-- Silent failures during file operations
-- Missing validation for app names
-- Hardcoded npm commands (now respects package manager)
-- Template's .git directory being copied to new projects
-- No timeout on dependency installation
-- Missing documentation for CLI usage
-
-### Security
-- Secrets generation using cryptographically secure methods
-- Validation to prevent directory traversal attacks
-- Proper handling of environment variables
+### Removed
+- 🗑️ `index.old.js` - Obsolete backup file
+- 🗑️ `CHANGES.md` - Merged into CHANGELOG.md
+- 🗑️ `INTERACTIVE_SETUP.md` - Merged into CONTRIBUTING.md
+- 🗑️ `QUICK_REFERENCE.md` - Content in README.md
+- 🗑️ Unnecessary devDependencies (TypeScript not needed for JS CLI)
 
 ## [1.1.0] - 2025-11-17
 

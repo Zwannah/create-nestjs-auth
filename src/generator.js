@@ -38,6 +38,9 @@ async function generateProject(targetDir, options) {
 async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir, orm }) {
   console.log(chalk.gray('   Using modular template structure...'));
   
+  // Ensure target directory exists
+  await fs.ensureDir(targetDir);
+  
   // Step 1: Copy base template
   console.log(chalk.gray('   Copying base template...'));
   await fs.copy(baseDir, targetDir, {
@@ -155,6 +158,9 @@ async function mergePackageJson(sourceDir, targetDir, dependenciesOnly = false) 
 
   const sourcePackageJson = await fs.readJSON(sourcePackageJsonPath);
   let targetPackageJson = {};
+
+  // Ensure target directory exists before writing
+  await fs.ensureDir(targetDir);
 
   if (await fs.pathExists(targetPackageJsonPath)) {
     targetPackageJson = await fs.readJSON(targetPackageJsonPath);

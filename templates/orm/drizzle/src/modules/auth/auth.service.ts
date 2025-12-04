@@ -27,7 +27,7 @@ export class AuthService {
   ) {}
 
   async signup(signupDto: SignupDto) {
-    const { name, email, password } = signupDto;
+    const { fullName, email, password } = signupDto;
 
     // Check if user already exists
     const existingUser = await this.db.query.users.findFirst({
@@ -39,23 +39,25 @@ export class AuthService {
     }
 
     // Hash password and create user
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     
     const [user] = await this.db
       .insert(users)
       .values({
-        name,
+        fullName,
         email: email.toLowerCase(),
-        password: hashedPassword,
+        passwordHash,
         role: 'USER',
+        isActive: true,
       })
       .returning();
 
     return {
       id: user.id,
-      name: user.name,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
     };
   }
 
@@ -71,8 +73,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    // Check if user is active
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is deactivated');
+    }
+
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -94,9 +101,10 @@ export class AuthService {
     return {
       user: {
         id: user.id,
-        name: user.name,
+        fullName: user.fullName,
         email: user.email,
         role: user.role,
+        isActive: user.isActive,
       },
       ...tokens,
     };
@@ -199,9 +207,10 @@ export class AuthService {
 
     return {
       id: user.id,
-      name: user.name,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
     };
   }
 

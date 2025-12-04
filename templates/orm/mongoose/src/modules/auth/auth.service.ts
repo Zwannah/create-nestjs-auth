@@ -10,7 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument, Role } from '../../schemas/user.schema';
+import { User, UserDocument, UserRole } from '../../schemas/user.schema';
 import { RefreshToken, RefreshTokenDocument } from '../../schemas/refresh-token.schema';
 import { SignupDto } from './dtos/signup.dto';
 import { LoginDto } from './dtos/login.dto';
@@ -27,7 +27,7 @@ export class AuthService {
   ) {}
 
   async signup(signupDto: SignupDto) {
-    const { name, email, password } = signupDto;
+    const { fullName, email, password } = signupDto;
 
     // Check if user already exists
     const existingUser = await this.userModel.findOne({ email: email.toLowerCase() });
@@ -36,17 +36,17 @@ export class AuthService {
     }
 
     // Hash password and create user
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await this.userModel.create({
-      name,
+      fullName,
       email: email.toLowerCase(),
-      password: hashedPassword,
-      role: Role.USER,
+      passwordHash,
+      role: UserRole.USER,
     });
 
     return {
       id: user._id.toString(),
-      name: user.name,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
     };
@@ -61,8 +61,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
+    // Check if user is active
+    if (!user.isActive) {
+      throw new UnauthorizedException('Account is deactivated');
+    }
+
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -84,7 +89,7 @@ export class AuthService {
     return {
       user: {
         id: user._id.toString(),
-        name: user.name,
+        fullName: user.fullName,
         email: user.email,
         role: user.role,
       },
@@ -178,7 +183,7 @@ export class AuthService {
 
     return {
       id: user._id.toString(),
-      name: user.name,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
     };

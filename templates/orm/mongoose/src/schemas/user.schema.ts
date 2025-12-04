@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
-export enum Role {
+export enum UserRole {
   USER = 'USER',
   ADMIN = 'ADMIN',
 }
@@ -15,7 +15,7 @@ export enum Role {
       ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
-      delete ret.password;
+      delete ret.passwordHash;
       return ret;
     },
   },
@@ -24,16 +24,19 @@ export class User {
   _id: Types.ObjectId;
 
   @Prop({ required: true })
-  name: string;
+  fullName: string;
 
   @Prop({ required: true, unique: true, lowercase: true, trim: true })
   email: string;
 
   @Prop({ required: true })
-  password: string;
+  passwordHash: string;
 
-  @Prop({ type: String, enum: Role, default: Role.USER })
-  role: Role;
+  @Prop({ type: String, enum: UserRole, default: UserRole.USER })
+  role: UserRole;
+
+  @Prop({ default: true })
+  isActive: boolean;
 
   @Prop({ default: Date.now })
   createdAt: Date;

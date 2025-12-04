@@ -6,7 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
-import { User, UserDocument, Role } from '../../schemas/user.schema';
+import { User, UserDocument, UserRole } from '../../schemas/user.schema';
 import { RefreshToken, RefreshTokenDocument } from '../../schemas/refresh-token.schema';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
@@ -21,7 +21,7 @@ export class UsersService {
   ) {}
 
   async getProfile(userId: string) {
-    const user = await this.userModel.findById(userId).select('-password');
+    const user = await this.userModel.findById(userId).select('-passwordHash');
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -46,19 +46,19 @@ export class UsersService {
     }
 
     // Hash new password if provided
-    let hashedPassword: string | undefined;
+    let passwordHash: string | undefined;
     if (updateProfileDto.password) {
-      hashedPassword = await bcrypt.hash(updateProfileDto.password, SALT_ROUNDS);
+      passwordHash = await bcrypt.hash(updateProfileDto.password, SALT_ROUNDS);
     }
 
     const updateData: any = {};
-    if (updateProfileDto.name) updateData.name = updateProfileDto.name;
+    if (updateProfileDto.fullName) updateData.fullName = updateProfileDto.fullName;
     if (updateProfileDto.email) updateData.email = updateProfileDto.email.toLowerCase();
-    if (hashedPassword) updateData.password = hashedPassword;
+    if (passwordHash) updateData.passwordHash = passwordHash;
 
     const updatedUser = await this.userModel
       .findByIdAndUpdate(userId, updateData, { new: true })
-      .select('-password');
+      .select('-passwordHash');
 
     return this.sanitizeUser(updatedUser);
   }
@@ -71,7 +71,7 @@ export class UsersService {
     const [usersList, total] = await Promise.all([
       this.userModel
         .find()
-        .select('-password')
+        .select('-passwordHash')
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 }),
@@ -98,7 +98,7 @@ export class UsersService {
       return null;
     }
 
-    const user = await this.userModel.findById(userId).select('-password');
+    const user = await this.userModel.findById(userId).select('-passwordHash');
     if (!user) {
       return null;
     }
@@ -125,20 +125,21 @@ export class UsersService {
     }
 
     // Hash new password if provided
-    let hashedPassword: string | undefined;
+    let passwordHash: string | undefined;
     if (updateUserDto.password) {
-      hashedPassword = await bcrypt.hash(updateUserDto.password, SALT_ROUNDS);
+      passwordHash = await bcrypt.hash(updateUserDto.password, SALT_ROUNDS);
     }
 
     const updateData: any = {};
-    if (updateUserDto.name) updateData.name = updateUserDto.name;
+    if (updateUserDto.fullName) updateData.fullName = updateUserDto.fullName;
     if (updateUserDto.email) updateData.email = updateUserDto.email.toLowerCase();
     if (updateUserDto.role) updateData.role = updateUserDto.role;
-    if (hashedPassword) updateData.password = hashedPassword;
+    if (updateUserDto.isActive !== undefined) updateData.isActive = updateUserDto.isActive;
+    if (passwordHash) updateData.passwordHash = passwordHash;
 
     const updatedUser = await this.userModel
       .findByIdAndUpdate(userId, updateData, { new: true })
-      .select('-password');
+      .select('-passwordHash');
 
     return this.sanitizeUser(updatedUser);
   }
@@ -167,9 +168,10 @@ export class UsersService {
 
     return {
       id: user._id.toString(),
-      name: user.name,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
+      isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

@@ -31,13 +31,14 @@ async function seed() {
       console.log('⚠️  Admin user already exists, skipping...');
     } else {
       // Create admin user
-      const adminPassword = await bcrypt.hash('Admin@123', SALT_ROUNDS);
+      const adminPasswordHash = await bcrypt.hash('Admin@123', SALT_ROUNDS);
       
       await db.insert(users).values({
-        name: 'Admin User',
+        fullName: 'Admin User',
         email: 'admin@example.com',
-        password: adminPassword,
+        passwordHash: adminPasswordHash,
         role: 'ADMIN',
+        isActive: true,
       });
 
       console.log('✓ Created admin user');
@@ -54,13 +55,14 @@ async function seed() {
       console.log('⚠️  Regular user already exists, skipping...');
     } else {
       // Create regular user
-      const userPassword = await bcrypt.hash('User@123', SALT_ROUNDS);
+      const userPasswordHash = await bcrypt.hash('User@123', SALT_ROUNDS);
       
       await db.insert(users).values({
-        name: 'Regular User',
+        fullName: 'Regular User',
         email: 'user@example.com',
-        password: userPassword,
+        passwordHash: userPasswordHash,
         role: 'USER',
+        isActive: true,
       });
 
       console.log('✓ Created regular user');

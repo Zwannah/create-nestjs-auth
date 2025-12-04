@@ -8,7 +8,7 @@ import { eq, ne, and, desc, count } from 'drizzle-orm';
 import * as bcrypt from 'bcrypt';
 import { DRIZZLE } from '../../database/database.module';
 import { DrizzleDB } from '../../database/drizzle';
-import { users, refreshTokens, Role } from '../../database/schema';
+import { users, refreshTokens, UserRole } from '../../database/schema';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 
@@ -54,15 +54,15 @@ export class UsersService {
     }
 
     // Hash new password if provided
-    let hashedPassword: string | undefined;
+    let passwordHash: string | undefined;
     if (updateProfileDto.password) {
-      hashedPassword = await bcrypt.hash(updateProfileDto.password, SALT_ROUNDS);
+      passwordHash = await bcrypt.hash(updateProfileDto.password, SALT_ROUNDS);
     }
 
     const updateData: Record<string, any> = { updatedAt: new Date() };
-    if (updateProfileDto.name) updateData.name = updateProfileDto.name;
+    if (updateProfileDto.fullName) updateData.fullName = updateProfileDto.fullName;
     if (updateProfileDto.email) updateData.email = updateProfileDto.email.toLowerCase();
-    if (hashedPassword) updateData.password = hashedPassword;
+    if (passwordHash) updateData.passwordHash = passwordHash;
 
     const [updatedUser] = await this.db
       .update(users)
@@ -144,16 +144,17 @@ export class UsersService {
     }
 
     // Hash new password if provided
-    let hashedPassword: string | undefined;
+    let passwordHash: string | undefined;
     if (updateUserDto.password) {
-      hashedPassword = await bcrypt.hash(updateUserDto.password, SALT_ROUNDS);
+      passwordHash = await bcrypt.hash(updateUserDto.password, SALT_ROUNDS);
     }
 
     const updateData: Record<string, any> = { updatedAt: new Date() };
-    if (updateUserDto.name) updateData.name = updateUserDto.name;
+    if (updateUserDto.fullName) updateData.fullName = updateUserDto.fullName;
     if (updateUserDto.email) updateData.email = updateUserDto.email.toLowerCase();
-    if (updateUserDto.role) updateData.role = updateUserDto.role as Role;
-    if (hashedPassword) updateData.password = hashedPassword;
+    if (updateUserDto.role) updateData.role = updateUserDto.role as UserRole;
+    if (updateUserDto.isActive !== undefined) updateData.isActive = updateUserDto.isActive;
+    if (passwordHash) updateData.passwordHash = passwordHash;
 
     const [updatedUser] = await this.db
       .update(users)
@@ -189,7 +190,7 @@ export class UsersService {
       return null;
     }
 
-    const { password, ...safeUser } = user;
+    const { passwordHash, ...safeUser } = user;
     return safeUser;
   }
 }

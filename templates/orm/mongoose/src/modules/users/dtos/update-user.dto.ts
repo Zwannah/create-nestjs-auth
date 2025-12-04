@@ -1,9 +1,13 @@
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 import { UpdateProfileDto } from './update-profile.dto';
-import { Role } from '../../../schemas/user.schema';
+import { UserRole } from '../../../schemas/user.schema';
 
 export class UpdateUserDto extends UpdateProfileDto {
   @IsOptional()
-  @IsEnum(Role, { message: 'Role must be a valid Role' })
-  role?: Role;
+  @IsEnum(UserRole, { message: 'Role must be a valid UserRole' })
+  role?: UserRole;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

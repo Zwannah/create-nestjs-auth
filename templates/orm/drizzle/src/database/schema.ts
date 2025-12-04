@@ -9,16 +9,17 @@ import {
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
-// Role enum
-export const roleEnum = pgEnum('role', ['USER', 'ADMIN']);
+// UserRole enum
+export const userRoleEnum = pgEnum('user_role', ['USER', 'ADMIN']);
 
 // Users table
 export const users = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
+  fullName: varchar('full_name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
-  password: text('password').notNull(),
-  role: roleEnum('role').default('USER').notNull(),
+  passwordHash: text('password_hash').notNull(),
+  role: userRoleEnum('role').default('USER').notNull(),
+  isActive: boolean('is_active').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -56,4 +57,4 @@ export type NewUser = typeof users.$inferInsert;
 export type RefreshToken = typeof refreshTokens.$inferSelect;
 export type NewRefreshToken = typeof refreshTokens.$inferInsert;
 
-export type Role = 'USER' | 'ADMIN';
+export type UserRole = 'USER' | 'ADMIN';

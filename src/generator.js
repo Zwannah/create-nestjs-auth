@@ -47,7 +47,14 @@ async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir,
     filter: createCopyFilter(baseDir),
   });
 
-  // Step 2: Apply ORM adapter
+  // Step 2: Rename gitignore to .gitignore (npm excludes .gitignore files from packages)
+  const gitignoreSrc = path.join(targetDir, 'gitignore');
+  const gitignoreDest = path.join(targetDir, '.gitignore');
+  if (await fs.pathExists(gitignoreSrc)) {
+    await fs.rename(gitignoreSrc, gitignoreDest);
+  }
+
+  // Step 3: Apply ORM adapter
   if (await fs.pathExists(ormDir)) {
     console.log(chalk.gray(`   Applying ${ORM_OPTIONS[orm]?.name || orm} adapter...`));
     await fs.copy(ormDir, targetDir, {
@@ -58,7 +65,7 @@ async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir,
     await mergePackageJson(ormDir, targetDir);
   }
 
-  // Step 3: Apply database configuration
+  // Step 4: Apply database configuration
   if (await fs.pathExists(dbDir)) {
     console.log(chalk.gray(`   Configuring database...`));
     await fs.copy(dbDir, targetDir, {
@@ -108,7 +115,8 @@ function createCopyFilter(baseDir, excludeFiles = []) {
     const basename = path.basename(src);
     const relativePath = path.relative(baseDir, src);
     
-    if (basename === '.gitignore') return true;
+    // Allow gitignore (renamed from .gitignore for npm compatibility)
+    if (basename === 'gitignore' || basename === '.gitignore') return true;
     if (excludeFiles.includes(basename)) return false;
     
     // Check for node_modules and .git only within the template directory
@@ -132,7 +140,8 @@ function createOrmSpecificFilter(orm, dbDir) {
     const basename = path.basename(src);
     const relativePath = path.relative(dbDir, src);
 
-    if (basename === '.gitignore') return true;
+    // Allow gitignore (renamed from .gitignore for npm compatibility)
+    if (basename === 'gitignore' || basename === '.gitignore') return true;
     // Check for node_modules only within the template directory (not in the CLI install path)
     if (relativePath.includes('node_modules') || basename === 'package.json') return false;
 

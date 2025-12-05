@@ -33,7 +33,7 @@ jobs:
       - name: Cleanup test output
         run: rm -rf test-output
 
+      # Uses OIDC trusted publishing - no token required
+      # Configure at: https://www.npmjs.com/package/create-nestjs-auth/access
       - name: Publish to npm
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

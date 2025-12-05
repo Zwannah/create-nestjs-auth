@@ -38,10 +38,13 @@ async function generateProject(targetDir, options) {
 async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir, orm }) {
   console.log(chalk.gray('   Using modular template structure...'));
   
+  // Ensure target directory exists
+  await fs.ensureDir(targetDir);
+  
   // Step 1: Copy base template
   console.log(chalk.gray('   Copying base template...'));
   await fs.copy(baseDir, targetDir, {
-    filter: createCopyFilter(),
+    filter: createCopyFilter(baseDir),
   });
 
   // Step 2: Apply ORM adapter
@@ -49,7 +52,7 @@ async function generateFromModularTemplates(targetDir, { baseDir, ormDir, dbDir,
     console.log(chalk.gray(`   Applying ${ORM_OPTIONS[orm]?.name || orm} adapter...`));
     await fs.copy(ormDir, targetDir, {
       overwrite: true,
-      filter: createCopyFilter(['package.json']),
+      filter: createCopyFilter(ormDir, ['package.json']),
     });
     
     await mergePackageJson(ormDir, targetDir);
@@ -96,15 +99,22 @@ async function generateFromLegacyTemplate(targetDir) {
 
 /**
  * Creates a copy filter function
+ * @param {string} baseDir - The base directory being copied from
  * @param {Array<string>} excludeFiles - Additional files to exclude
  * @returns {function} Filter function
  */
-function createCopyFilter(excludeFiles = []) {
+function createCopyFilter(baseDir, excludeFiles = []) {
   return (src) => {
     const basename = path.basename(src);
+    const relativePath = path.relative(baseDir, src);
+    
     if (basename === '.gitignore') return true;
     if (excludeFiles.includes(basename)) return false;
-    return !src.includes('node_modules') && !src.includes(path.sep + '.git');
+    
+    // Check for node_modules and .git only within the template directory
+    return !relativePath.includes('node_modules') && 
+           !relativePath.includes(path.sep + '.git') &&
+           basename !== '.git';
   };
 }
 
@@ -123,7 +133,8 @@ function createOrmSpecificFilter(orm, dbDir) {
     const relativePath = path.relative(dbDir, src);
 
     if (basename === '.gitignore') return true;
-    if (src.includes('node_modules') || basename === 'package.json') return false;
+    // Check for node_modules only within the template directory (not in the CLI install path)
+    if (relativePath.includes('node_modules') || basename === 'package.json') return false;
 
     // Filter based on ORM
     if (orm === 'prisma') {
@@ -155,6 +166,9 @@ async function mergePackageJson(sourceDir, targetDir, dependenciesOnly = false) 
 
   const sourcePackageJson = await fs.readJSON(sourcePackageJsonPath);
   let targetPackageJson = {};
+
+  // Ensure target directory exists before writing
+  await fs.ensureDir(targetDir);
 
   if (await fs.pathExists(targetPackageJsonPath)) {
     targetPackageJson = await fs.readJSON(targetPackageJsonPath);

